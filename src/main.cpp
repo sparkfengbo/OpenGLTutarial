@@ -83,9 +83,9 @@ int main() {
     glDeleteShader(fragmentShader);
 
     float vertice1[] = {
-            -0.25, 0, 0,
-            0, 0.25,0,
-            0.25, 0,0
+            -0.25, 0,
+            0, 0.25,
+            0.25, 0,
     };
     float vertice2[] = {
             0, 0,
@@ -93,27 +93,19 @@ int main() {
             0,-0.25
     };
 
-    unsigned int VAO1,VBO1;
-    unsigned int VAO2,VBO2;
+    unsigned int VAO[2], VBO[2];
+    glGenVertexArrays(2, VAO);
+    glGenBuffers(2, VBO);
 
-    glGenVertexArrays(1, &VAO1);
-    glGenBuffers(1, &VBO1);
-
-    glBindVertexArray(VAO1);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBindVertexArray(VAO[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertice1), vertice1, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void *)0);
     glEnableVertexAttribArray(0);
 
-
-    glGenVertexArrays(1, &VAO2);
-    glGenBuffers(1, &VBO2);
-
-    glBindVertexArray(VAO2);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBindVertexArray(VAO[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertice2), vertice2, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void *)0);
     glEnableVertexAttribArray(0);
 
@@ -130,10 +122,10 @@ int main() {
 
         glUseProgram(shaderProgram);
 
-        glBindVertexArray(VAO1);
+        glBindVertexArray(VAO[0]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        glBindVertexArray(VAO2);
+        glBindVertexArray(VAO[1]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
