@@ -10,9 +10,9 @@ set(ALL_LIBS
         )
 
 set(SRC
-        src/main.cpp
-        src/Shader.cpp
         src/stb_image.cpp
+        src/Shader.cpp
+        src/main.cpp
         )
 
 include_directories(
