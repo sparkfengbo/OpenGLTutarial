@@ -27,6 +27,8 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     Shader ourShader("../shaders/shader.vs", "../shaders/shader.fs");
+    ourShader.use();
+    ourShader.setUniformFloat("offset", 0.25);
 
     float vertice[] = {
             // 位置              // 颜色

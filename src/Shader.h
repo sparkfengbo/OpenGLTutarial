@@ -5,7 +5,7 @@
 #ifndef OPENGLTUTARIAL_SHADER_H
 #define OPENGLTUTARIAL_SHADER_H
 
-#include <glad/glad.h>;
+#include <glad/glad.h>
 
 #include <string>
 #include <fstream>
