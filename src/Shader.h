@@ -11,6 +11,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Shader {
 public:
@@ -23,6 +25,7 @@ public:
     void setUniformBool(const std::string &name, bool value) const;
     void setUniformInt(const std::string &name, int value) const;
     void setUniformFloat(const std::string &name, float value) const;
+    void setUniformMat4(const std::string &name, glm::mat4 value) const;
 };
 
 
