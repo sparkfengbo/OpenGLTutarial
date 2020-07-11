@@ -7,6 +7,7 @@ set(ALL_LIBS
         ${OPENGL_LIBRARY}
         glfw
         glad
+        glm
         )
 
 set(SRC
@@ -19,12 +20,16 @@ include_directories(
         src/
         external/glfw/include/
         external/glad/include/
+#        external/glm/include/
+
+
 )
 
 find_package(OpenGL REQUIRED)
 
 add_subdirectory(external/glfw)
 add_subdirectory(external/glad)
+add_subdirectory(external/glm)
 
 add_executable(OpenGLTutarial ${SRC})
 
