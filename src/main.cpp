@@ -137,9 +137,11 @@ int main() {
 //    transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
 //    transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
+
+        //translate和rotate顺序不同导致的效果不同，因为坐标系发生了变化
         glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-        transform = glm::scale(transform, glm::vec3(0.5, 0.5, 0.5));
+        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f)); // Switched the order
+        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f)); // Switched the order
 
         unsigned int transformLoc = glGetUniformLocation(ourShader.id, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
