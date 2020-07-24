@@ -37,6 +37,7 @@ set(LIGHT_SRC
         src/Mesh.cpp
         src/Model.cpp
         src/Camera.h
+        src/utils.h
         )
 
 include_directories(
