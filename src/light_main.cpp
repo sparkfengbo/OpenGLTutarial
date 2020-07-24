@@ -147,8 +147,15 @@ int main() {
     glEnableVertexAttribArray(0);
 
     unsigned int diffuseMap = loadTexture("../assets/container2.png");
+    unsigned int specularMap = loadTexture("../assets/container2_specular.png");
+
+    // shader configuration
+    // --------------------
+    lightingShader.use();
+
     lightingShader.use();
     lightingShader.setUniformInt("material.diffuse", 0);
+    lightingShader.setUniformInt("material.specular", 1);
 
     while(!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
@@ -167,8 +174,8 @@ int main() {
 
 //        lightingShader.setUniformVec3("material.ambient",  1.0f, 0.5f, 0.31f);
 //        lightingShader.setUniformVec3("material.diffuse",  1.0f, 0.5f, 0.31f);
-        lightingShader.setUniformVec3("material.specular", 0.5f, 0.5f, 0.5f);
-        lightingShader.setUniformFloat("material.shininess", 32.0f);
+//        lightingShader.setUniformVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        lightingShader.setUniformFloat("material.shininess", 64.0f);
 
         lightingShader.setUniformVec3("light.ambient",  0.2f, 0.2f, 0.2f);
         lightingShader.setUniformVec3("light.diffuse",  0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
@@ -184,10 +191,10 @@ int main() {
         glm::mat4 model = glm::mat4(1.0f);
         lightingShader.setUniformMat4("model", model);
 
-        // bind diffuse map
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
-
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
         // render the cube
         glBindVertexArray(cubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
