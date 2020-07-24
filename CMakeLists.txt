@@ -17,6 +17,7 @@ set(BOX_SRC
         src/box_main.cpp
         src/Mesh.cpp
         src/Model.cpp
+        src/Camera.h
         )
 
 
@@ -26,6 +27,16 @@ set(ASSIMP_SRC
         src/assimp_main.cpp
         src/Mesh.cpp
         src/Model.cpp
+        src/Camera.h
+        )
+
+set(LIGHT_SRC
+        src/stb_image.cpp
+        src/Shader.cpp
+        src/light_main.cpp
+        src/Mesh.cpp
+        src/Model.cpp
+        src/Camera.h
         )
 
 include_directories(
@@ -45,7 +56,9 @@ add_subdirectory(external/assimp)
 
 add_executable(Box ${BOX_SRC})
 add_executable(ASSIMP ${ASSIMP_SRC})
+add_executable(LIGHT ${LIGHT_SRC})
 
 target_link_libraries(Box ${ALL_LIBS})
 target_link_libraries(ASSIMP ${ALL_LIBS})
+target_link_libraries(LIGHT ${ALL_LIBS})
 
