@@ -40,7 +40,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos(0.0f, 0.0f, 6.0f);
+glm::vec4 lightPos(0.0f, 0.0f, 6.0f, 0.0f);
 
 const float vertices[] = {
         // positions          // normals           // texture coords
@@ -157,6 +157,20 @@ int main() {
     lightingShader.setUniformInt("material.diffuse", 0);
     lightingShader.setUniformInt("material.specular", 1);
 
+    // positions all containers
+    glm::vec3 cubePositions[] = {
+            glm::vec3( 0.0f,  0.0f,  0.0f),
+            glm::vec3( 2.0f,  5.0f, -15.0f),
+            glm::vec3(-1.5f, -2.2f, -2.5f),
+            glm::vec3(-3.8f, -2.0f, -12.3f),
+            glm::vec3( 2.4f, -0.4f, -3.5f),
+            glm::vec3(-1.7f,  3.0f, -7.5f),
+            glm::vec3( 1.3f, -2.0f, -2.5f),
+            glm::vec3( 1.5f,  2.0f, -2.5f),
+            glm::vec3( 1.5f,  0.2f, -1.5f),
+            glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
     while(!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -169,7 +183,7 @@ int main() {
         lightingShader.use();
 //        lightingShader.setUniformVec3("objectColor", 1.0f, 0.5f, 0.31f);
 //        lightingShader.setUniformVec3("lightColor",  1.0f, 1.0f, 1.0f);
-        lightingShader.setUniformVec3("lightPos", lightPos);
+        lightingShader.setUniformVec3("lightPos", glm::vec3(lightPos));
         lightingShader.setUniformVec3("viewPos", camera.Position);
 
 //        lightingShader.setUniformVec3("material.ambient",  1.0f, 0.5f, 0.31f);
@@ -180,6 +194,7 @@ int main() {
         lightingShader.setUniformVec3("light.ambient",  0.2f, 0.2f, 0.2f);
         lightingShader.setUniformVec3("light.diffuse",  0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
         lightingShader.setUniformVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setUniformVec3("light.direction", 0.0f, 0.0f, -6.f);
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
@@ -197,15 +212,24 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, specularMap);
         // render the cube
         glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            // calculate the model matrix for each object and pass it to shader before drawing
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            lightingShader.setUniformMat4("model", model);
 
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
-        // also draw the lamp object
+//        // also draw the lamp object
         lightCubeShader.use();
         lightCubeShader.setUniformMat4("projection", projection);
         lightCubeShader.setUniformMat4("view", view);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
+        model = glm::translate(model, glm::vec3(lightPos));
         model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
         lightCubeShader.setUniformMat4("model", model);
 
