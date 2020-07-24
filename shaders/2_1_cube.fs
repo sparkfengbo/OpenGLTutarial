@@ -25,6 +25,7 @@ struct Flashlight {
     vec3  position;
     vec3  direction;
     float cutOff;
+    float outerCutOff;
 
     vec3 ambient;
     vec3 diffuse;
@@ -49,44 +50,37 @@ in vec3 FragPos;
 
 void main()
 {
+    // ambient
+    vec3 ambient = flashlight.ambient * texture(material.diffuse, TexCoords).rgb;
+
+    // diffuse
+    vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(flashlight.position - FragPos);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = flashlight.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
+
+    // specular
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = flashlight.specular * spec * texture(material.specular, TexCoords).rgb;
+
+    // spotlight (soft edges)
     float theta = dot(lightDir, normalize(-flashlight.direction));
-    if(theta > flashlight.cutOff) {
-        // ambient
-        vec3 ambient = flashlight.ambient * texture(material.diffuse, TexCoords).rgb;
+    float epsilon = (flashlight.cutOff - flashlight.outerCutOff);
+    float intensity = clamp((theta - flashlight.outerCutOff) / epsilon, 0.0, 1.0);
+    diffuse  *= intensity;
+    specular *= intensity;
 
-        // diffuse
-        vec3 norm = normalize(Normal);
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = flashlight.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
+    // attenuation
+    float distance    = length(flashlight.position - FragPos);
+    float attenuation = 1.0 / (flashlight.constant + flashlight.linear * distance + flashlight.quadratic * (distance * distance));
+    ambient  *= attenuation;
+    diffuse   *= attenuation;
+    specular *= attenuation;
 
-        // specular
-        vec3 viewDir = normalize(viewPos - FragPos);
-        vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-        vec3 specular = flashlight.specular * spec * texture(material.specular, TexCoords).rgb;
-
-        // attenuation
-        float distance    = length(flashlight.position - FragPos);
-        float attenuation = 1.0 / (flashlight.constant + flashlight.linear * distance + flashlight.quadratic * (distance * distance));
-
-        // remove attenuation from ambient,
-        // as otherwise at large distances the light would be darker inside than outside the spotlight
-        // due the ambient term in the else branche
-//         ambient  *= attenuation;
-        diffuse  *= attenuation;
-        specular *= attenuation;
-
-        vec3 result = ambient + diffuse + specular;
-        FragColor = vec4(result, 1.0);
-    } else {
-        // else, use ambient light so scene isn't completely dark outside the spotlight.
-        FragColor = vec4(flashlight.ambient * texture(material.diffuse, TexCoords).rgb, 1.0);
-    }
-
-
-
-
+    vec3 result = ambient + diffuse + specular;
+    FragColor = vec4(result, 1.0);
 
 //     // ambient
 //     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));

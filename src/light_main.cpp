@@ -204,6 +204,7 @@ int main() {
         lightingShader.setUniformVec3("flashlight.position",  camera.Position);
         lightingShader.setUniformVec3("flashlight.direction", camera.Front);
         lightingShader.setUniformFloat("flashlight.cutOff",   glm::cos(glm::radians(12.5f)));
+        lightingShader.setUniformFloat("flashlight.outerCutOff", glm::cos(glm::radians(17.5f)));
         lightingShader.setUniformVec3("flashlight.ambient",  0.2f, 0.2f, 0.2f);
         lightingShader.setUniformVec3("flashlight.diffuse",  0.5f, 0.5f, 0.5f);
         lightingShader.setUniformVec3("flashlight.specular", 1.0f, 1.0f, 1.0f);
