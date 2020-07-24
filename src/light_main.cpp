@@ -201,6 +201,16 @@ int main() {
         lightingShader.setUniformFloat("light.linear",    0.07f);
         lightingShader.setUniformFloat("light.quadratic", 0.0002f);
 
+        lightingShader.setUniformVec3("flashlight.position",  camera.Position);
+        lightingShader.setUniformVec3("flashlight.direction", camera.Front);
+        lightingShader.setUniformFloat("flashlight.cutOff",   glm::cos(glm::radians(12.5f)));
+        lightingShader.setUniformVec3("flashlight.ambient",  0.2f, 0.2f, 0.2f);
+        lightingShader.setUniformVec3("flashlight.diffuse",  0.5f, 0.5f, 0.5f);
+        lightingShader.setUniformVec3("flashlight.specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setUniformFloat("flashlight.constant",  1.0f);
+        lightingShader.setUniformFloat("flashlight.linear",    0.07f);
+        lightingShader.setUniformFloat("flashlight.quadratic", 0.0002f);
+
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
