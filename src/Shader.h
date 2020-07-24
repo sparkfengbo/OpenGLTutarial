@@ -27,6 +27,7 @@ public:
     void setUniformFloat(const std::string &name, float value) const;
     void setUniformMat4(const std::string &name, glm::mat4 value) const;
     void setUniformVec3(const std::string &name, float x, float y, float z) const;
+    void setUniformVec3(const std::string &name, glm::vec3 value) const;
 };
 
 
