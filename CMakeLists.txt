@@ -40,6 +40,16 @@ set(LIGHT_SRC
         src/utils.h
         )
 
+set(HOUSE_SHOW_SRC
+        src/stb_image.cpp
+        src/Shader.cpp
+        src/house_show_main.cpp
+        src/Mesh.cpp
+        src/Model.cpp
+        src/Camera.h
+        src/utils.h
+        )
+
 include_directories(
         src/
         external/glfw/include/
@@ -58,8 +68,10 @@ add_subdirectory(external/assimp)
 add_executable(Box ${BOX_SRC})
 add_executable(ASSIMP ${ASSIMP_SRC})
 add_executable(LIGHT ${LIGHT_SRC})
+add_executable(HOUSE_SHOW ${HOUSE_SHOW_SRC})
 
 target_link_libraries(Box ${ALL_LIBS})
 target_link_libraries(ASSIMP ${ALL_LIBS})
 target_link_libraries(LIGHT ${ALL_LIBS})
+target_link_libraries(HOUSE_SHOW ${ALL_LIBS})
 
