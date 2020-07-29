@@ -31,7 +31,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 
 const unsigned int WINDOW_WIDTH = 600;
-const unsigned int WINDOW_HEIGHT = 600;
+const unsigned int WINDOW_HEIGHT = 1000;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -43,6 +43,10 @@ bool mouseLeftPressed = false;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+int window_width = WINDOW_WIDTH;
+int window_height = WINDOW_HEIGHT;
+bool vertical = true;
 
 float skyboxVertices[] = {
         // 上左下顶点
@@ -217,7 +221,8 @@ int main() {
 
     glClearColor(1.f, 0.1f, 0.1f, 0.0f);
 
-    Shader skyBoxShader("../shaders/house_show_cube_map.vs", "../shaders/house_show_cube_map.fs");
+    Shader virtualRoomShader("../shaders/house_show_cube_map.vs", "../shaders/house_show_cube_map.fs");
+    Shader realRoomShader("../shaders/house_show_cube_map.vs", "../shaders/house_show_cube_map.fs");
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
@@ -234,13 +239,22 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    vector<string> faces{
+    vector<string> virtualRoom1{
         "../assets/room_show/virtual_room_1/4_r.jpg",
         "../assets/room_show/virtual_room_1/4_l.jpg",
         "../assets/room_show/virtual_room_1/4_u.jpg",
         "../assets/room_show/virtual_room_1/4_d.jpg",
         "../assets/room_show/virtual_room_1/4_f.jpg",
         "../assets/room_show/virtual_room_1/4_b.jpg"
+    };
+
+    vector<string> realRoom1{
+            "../assets/room_show/real_room_1/4_r.jpg",
+            "../assets/room_show/real_room_1/4_l.jpg",
+            "../assets/room_show/real_room_1/4_u.jpg",
+            "../assets/room_show/real_room_1/4_d.jpg",
+            "../assets/room_show/real_room_1/4_f.jpg",
+            "../assets/room_show/real_room_1/4_b.jpg"
     };
 
 //    vector<string> faces{
@@ -252,19 +266,27 @@ int main() {
 //            "../assets/skybox/back.jpg",
 //    };
 
-    unsigned int sykboxTextureId = loadSkyBoxTexture(faces);
-    skyBoxShader.use();
-    skyBoxShader.setUniformInt("skybox", 0);
-
+    unsigned int virtualRoomTextureId = loadSkyBoxTexture(virtualRoom1);
+    unsigned int realRoomTextureId = loadSkyBoxTexture(realRoom1);
     unsigned int topTexture = loadSignalTexture("../assets/room_show/common/north-point-circle.png");
-    skyBoxShader.setUniformInt("topBrand", 1);
-
     unsigned int bottomTexture = loadSignalTexture("../assets/room_show/common/platfond.png");
-    skyBoxShader.setUniformInt("bottomDirection", 2);
+
+    virtualRoomShader.use();
+    virtualRoomShader.setUniformInt("skybox", 0);
+    virtualRoomShader.setUniformInt("topBrand", 2);
+    virtualRoomShader.setUniformInt("bottomDirection", 3);
+
+    realRoomShader.use();
+    realRoomShader.setUniformInt("skybox", 1);
+    realRoomShader.setUniformInt("topBrand", 2);
+    realRoomShader.setUniformInt("bottomDirection", 3);
+
 
 //    camera.Front = glm::vec3(0.0f, 0.0f, 1.0f);
 //    camera.Yaw = 90;
     while(!glfwWindowShouldClose(window)) {
+        std::cout<<"draw"<<endl;
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -276,32 +298,65 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        skyBoxShader.setUniformMat4("projection", projection);
-//        skyBoxShader.setUniformMat4("view", glm::mat4(glm::mat3(camera.GetViewMatrix())));
-        skyBoxShader.setUniformMat4("view", view);
+        glm::mat4 projection ;
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, bottomTexture);
+        if (vertical) {
+            projection = glm::perspective(glm::radians(90.0f), ((float)window_width * 0.5f)/ (float)window_height, 0.1f, 100.0f);
+        } else {
+            projection = glm::perspective(glm::radians(90.0f), (float)window_width / ((float)window_height * 0.5f), 0.1f, 100.0f);
+        }
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 model = glm::mat4(1);
+        virtualRoomShader.use();
+        virtualRoomShader.setUniformMat4("model", model);
+        virtualRoomShader.setUniformMat4("projection", projection);
+        virtualRoomShader.setUniformMat4("view", view);
 
         glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, bottomTexture);
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, topTexture);
 
         glBindVertexArray(skyBoxVAO);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, sykboxTextureId);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, virtualRoomTextureId);
+        if (vertical) {
+            glViewport(window_width/2, 0, window_width/2, window_height);
+        } else {
+            glViewport(0, 0, window_width, window_height/2);
+        }
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+
+        realRoomShader.use();
+
+        model = glm::rotate(model, glm::radians(129.f), glm::vec3(0.f, 1.f, 0.f));
+        realRoomShader.setUniformMat4("projection", projection);
+        realRoomShader.setUniformMat4("view", view);
+        realRoomShader.setUniformMat4("model", model);
+
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, realRoomTextureId);
+        if (vertical) {
+            glViewport(0, 0, window_width/2, window_height);
+        } else {
+            glViewport(0, window_height/2, window_width, window_height/2);
+        }
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+        std::cout<<"draw end"<<endl;
+
     }
 
     glDeleteVertexArrays(1, &skyBoxVAO);
     glDeleteBuffers(1, &VBO);
-    skyBoxShader.del();
+    realRoomShader.del();
+    virtualRoomShader.del();
     glfwTerminate();
     return 0;
 }
@@ -325,9 +380,12 @@ void processInput(GLFWwindow *window) {
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
+    //在绘制时动态修改视口
+    std::cout<<"framebuffer_size_callback"<<endl;
+    window_width = width;
+    window_height = height;
+    vertical = window_width * 1.5 > window_height;
+//    glViewport(0, 0, width, height);
 }
 
 
