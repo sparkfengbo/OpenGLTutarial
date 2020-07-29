@@ -4,8 +4,8 @@
 #include <cmath>
 #include "Shader.h"
 #include "stb_image.h"
+#include "stb_image_write.h"
 #include "Camera.h"
-#include "utils.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -159,6 +159,29 @@ unsigned int loadSkyBoxTexture(std::vector<std::string> faces) {
     return textureId;
 }
 
+
+int loadSignalTexture(char const *filename) {
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    int width, height, nrChannels;
+//    stbi_set_flip_vertically_on_load( true);
+    unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, STBI_rgb_alpha);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+//        stbi_write_png(string(filename).append("test.png").c_str(), width, height, nrChannels, data, width * nrChannels);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    return texture;
+}
+
 int main() {
     glfwInit();
     //OpenGL 版本3.3
@@ -189,6 +212,10 @@ int main() {
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
+
+    glClearColor(1.f, 0.1f, 0.1f, 0.0f);
 
     Shader skyBoxShader("../shaders/house_show_cube_map.vs", "../shaders/house_show_cube_map.fs");
 
@@ -216,10 +243,27 @@ int main() {
         "../assets/room_show/virtual_room_1/4_b.jpg"
     };
 
+//    vector<string> faces{
+//            "../assets/skybox/right.jpg",
+//            "../assets/skybox/left.jpg",
+//            "../assets/skybox/top.jpg",
+//            "../assets/skybox/bottom.jpg",
+//            "../assets/skybox/front.jpg",
+//            "../assets/skybox/back.jpg",
+//    };
+
     unsigned int sykboxTextureId = loadSkyBoxTexture(faces);
     skyBoxShader.use();
     skyBoxShader.setUniformInt("skybox", 0);
 
+    unsigned int topTexture = loadSignalTexture("../assets/room_show/common/north-point-circle.png");
+    skyBoxShader.setUniformInt("topBrand", 1);
+
+    unsigned int bottomTexture = loadSignalTexture("../assets/room_show/common/platfond.png");
+    skyBoxShader.setUniformInt("bottomDirection", 2);
+
+//    camera.Front = glm::vec3(0.0f, 0.0f, 1.0f);
+//    camera.Yaw = 90;
     while(!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -237,6 +281,12 @@ int main() {
         skyBoxShader.setUniformMat4("projection", projection);
 //        skyBoxShader.setUniformMat4("view", glm::mat4(glm::mat3(camera.GetViewMatrix())));
         skyBoxShader.setUniformMat4("view", view);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, bottomTexture);
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, topTexture);
 
         glBindVertexArray(skyBoxVAO);
         glActiveTexture(GL_TEXTURE0);

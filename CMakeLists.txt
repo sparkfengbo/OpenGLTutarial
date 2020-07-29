@@ -42,6 +42,7 @@ set(LIGHT_SRC
 
 set(HOUSE_SHOW_SRC
         src/stb_image.cpp
+        src/stb_image_write.cpp
         src/Shader.cpp
         src/house_show_main.cpp
         src/Mesh.cpp
