@@ -20,7 +20,7 @@ void Model::loadModel(const string &path) {
     // check for errors
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
     {
-        cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+        cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
         return;
     }
     // retrieve the directory path of the filepath
@@ -28,6 +28,8 @@ void Model::loadModel(const string &path) {
 
     // process ASSIMP's root node recursively
     processNode(scene->mRootNode, scene);
+
+    postProcessVertex(meshes);
 }
 
 void Model::processNode(aiNode *node, const aiScene *scene) {
@@ -59,8 +61,18 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
         glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
         // positions
         vector.x = mesh->mVertices[i].x;
+        if (fabs(vector.x) > maxVertexNum) {
+            maxVertexNum = fabs(vector.x);
+        }
         vector.y = mesh->mVertices[i].y;
+        if (fabs(vector.y) > maxVertexNum) {
+            maxVertexNum = fabs(vector.y);
+        }
         vector.z = mesh->mVertices[i].z;
+        if (fabs(vector.z) > maxVertexNum) {
+            maxVertexNum = fabs(vector.z);
+        }
+
         vertex.Position = vector;
         // normals
         vector.x = mesh->mNormals[i].x;
@@ -80,15 +92,25 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
         // tangent
-        vector.x = mesh->mTangents[i].x;
-        vector.y = mesh->mTangents[i].y;
-        vector.z = mesh->mTangents[i].z;
-        vertex.Tangent = vector;
+        if (mesh->mTangents) {
+            vector.x = mesh->mTangents[i].x;
+            vector.y = mesh->mTangents[i].y;
+            vector.z = mesh->mTangents[i].z;
+            vertex.Tangent = vector;
+        } else {
+            vertex.Tangent = glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+
         // bitangent
-        vector.x = mesh->mBitangents[i].x;
-        vector.y = mesh->mBitangents[i].y;
-        vector.z = mesh->mBitangents[i].z;
-        vertex.Bitangent = vector;
+        if (mesh->mBitangents) {
+            vector.x = mesh->mBitangents[i].x;
+            vector.y = mesh->mBitangents[i].y;
+            vector.z = mesh->mBitangents[i].z;
+            vertex.Bitangent = vector;
+        } else {
+            vertex.Bitangent = glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+
         vertices.push_back(vertex);
     }
     // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
@@ -153,6 +175,16 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
         }
     }
     return textures;
+}
+
+void Model::postProcessVertex(vector<Mesh> meshes) {
+    for (unsigned int i = 0; i< meshes.size(); i++) {
+        Mesh mesh = meshes[i];
+        for (unsigned int j = 0; j < mesh.vertices.size(); j++) {
+            Vertex vertex = mesh.vertices[j];
+            vertex.Position /= maxVertexNum;
+        }
+    }
 }
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
