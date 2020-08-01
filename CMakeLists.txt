@@ -108,6 +108,17 @@ set(CULL_FACE_SRC
         src/utils.h
         )
 
+set(FBO_SRC
+        src/stb_image.cpp
+        src/stb_image_write.cpp
+        src/Shader.cpp
+        src/fbo_main.cpp
+        src/Mesh.cpp
+        src/Model.cpp
+        src/Camera.h
+        src/utils.h
+        )
+
 include_directories(
         src/
         external/glfw/include/
@@ -132,6 +143,7 @@ add_executable(DEPTH_TEST ${DEPTH_TEST_SRC})
 add_executable(STENCIL_TEST ${STENCIL_TEST_SRC})
 add_executable(BLENDER ${BLENDER_SRC})
 add_executable(CULL_FACE ${CULL_FACE_SRC})
+add_executable(FBO ${FBO_SRC})
 
 target_link_libraries(Box ${ALL_LIBS})
 target_link_libraries(ASSIMP ${ALL_LIBS})
@@ -142,4 +154,5 @@ target_link_libraries(DEPTH_TEST ${ALL_LIBS})
 target_link_libraries(STENCIL_TEST ${ALL_LIBS})
 target_link_libraries(BLENDER ${ALL_LIBS})
 target_link_libraries(CULL_FACE ${ALL_LIBS})
+target_link_libraries(FBO ${ALL_LIBS})
 
